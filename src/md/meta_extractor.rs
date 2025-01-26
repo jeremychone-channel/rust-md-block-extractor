@@ -8,10 +8,39 @@ use serde_json::Value;
 /// local value_obj, content = utils.text.meta_extract(content)
 /// ```
 pub fn meta_extract(content: &str) -> Result<(Value, String)> {
-	todo!()
+	let (meta_blocks, content) = extract_md_blocks_and_content(content)?;
+
+	let value = merge_values(meta_blocks)?;
+
+	Ok((value, content))
 }
 
-// region:    --- Support
+// region:    --- Block Value Parser
+
+fn merge_values(meta_blocks: Vec<MdBlock>) -> Result<Value> {
+	let value = if let Some(meta_block) = meta_blocks.into_iter().next() {
+		match meta_block.lang.as_deref() {
+			Some("toml") => {
+				let content = meta_block.content;
+				let toml_value: toml::Value = content.parse()?;
+				let json_value: Value = serde_json::to_value(toml_value)?;
+
+				// FIXME
+				json_value
+			}
+			Some(other) => return Err(format!("Lang '{other}' not supported for meta block").into()),
+			None => return Err("Meta block must have a compatible lang".into()),
+		}
+	} else {
+		Value::Null
+	};
+
+	Ok(value)
+}
+
+// endregion: --- Block Value Parser
+
+// region:    --- Lexer
 
 #[derive(Debug)]
 enum Action {
@@ -23,7 +52,7 @@ enum Action {
 }
 
 /// Returns the merge root value (if at least one), and the content, without the `#!meta` code blocks.
-fn meta_extract_md_blocks_and_content(content: &str) -> Result<(Vec<MdBlock>, String)> {
+fn extract_md_blocks_and_content(content: &str) -> Result<(Vec<MdBlock>, String)> {
 	let lines = content.lines();
 
 	let mut content: Vec<&str> = Vec::new();
@@ -122,7 +151,8 @@ fn meta_extract_md_blocks_and_content(content: &str) -> Result<(Vec<MdBlock>, St
 					Some(mut meta_block) => meta_block.1.push(line),
 					None => {
 						//
-						let lang = line.strip_prefix("```").map(|v| v.trim().to_string());
+						let lang = previous_line
+							.and_then(|prev_line| prev_line.strip_prefix("```").map(|v| v.trim().to_string()));
 						// type MetaBlock<'a> = (Option<String>, Vec<&'a str>);
 						current_meta_block = Some((lang, Vec::new()))
 					}
@@ -138,7 +168,7 @@ fn meta_extract_md_blocks_and_content(content: &str) -> Result<(Vec<MdBlock>, St
 	Ok((md_blocks, content))
 }
 
-// endregion: --- Support
+// endregion: --- Lexer
 
 // region:    --- Tests
 
@@ -148,11 +178,8 @@ mod tests {
 
 	use super::*;
 
-	#[test]
-	fn test_meta_extract_md_blocks_and_content_simple() -> Result<()> {
-		// -- Setup & Fixtures
-		// region:    --- fx_md
-		let fx_md = r#"
+	// region:    --- fx_md
+	const FX_MD_SIMPLE: &str = r#"
 Hey some content over here. 
 
 ```toml
@@ -182,10 +209,23 @@ def some()
 
 
 		"#;
-		// endregion: --- fx_md
+	// endregion: --- fx_md
 
+	#[test]
+	fn test_meta_extract() -> Result<()> {
 		// -- Exec
-		let (md_blocks, content) = meta_extract_md_blocks_and_content(fx_md)?;
+		let (value_root, content) = meta_extract(FX_MD_SIMPLE)?;
+
+		// -- Debug
+		println!("->> {value_root:?}");
+
+		Ok(())
+	}
+
+	#[test]
+	fn test_extract_md_blocks_and_content_simple() -> Result<()> {
+		// -- Exec
+		let (meta_blocks, content) = extract_md_blocks_and_content(FX_MD_SIMPLE)?;
 
 		// -- Debug
 		// println!("\n====\n");
@@ -195,13 +235,15 @@ def some()
 
 		// -- Check
 		// assert meta blocks
-		assert_eq!(md_blocks.len(), 2);
-		let meta_block = md_blocks.first().ok_or("Should have at least one meta block")?;
+		assert_eq!(meta_blocks.len(), 2);
+		let meta_block = meta_blocks.first().ok_or("Should have at least one meta block")?;
+		let lang = meta_block.lang.as_deref().ok_or("Meta block should have lang")?;
+		assert_eq!(lang, "toml");
 		assert!(
 			meta_block.content.contains(r#"files = ["src/**/*rs"]"#),
 			"should have files"
 		);
-		let meta_block = md_blocks.get(1).ok_or("Should have at least thow meta block")?;
+		let meta_block = meta_blocks.get(1).ok_or("Should have at least thow meta block")?;
 		assert!(
 			meta_block.content.contains(r#"temperature = 0.0"#),
 			"should have temperature"
