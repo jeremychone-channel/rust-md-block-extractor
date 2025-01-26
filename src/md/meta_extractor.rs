@@ -18,24 +18,36 @@ pub fn meta_extract(content: &str) -> Result<(Value, String)> {
 // region:    --- Block Value Parser
 
 fn merge_values(meta_blocks: Vec<MdBlock>) -> Result<Value> {
-	let value = if let Some(meta_block) = meta_blocks.into_iter().next() {
+	let mut values: Vec<Value> = Vec::new();
+
+	// -- Capture the json Values
+	for meta_block in meta_blocks {
 		match meta_block.lang.as_deref() {
 			Some("toml") => {
 				let content = meta_block.content;
 				let toml_value: toml::Value = content.parse()?;
 				let json_value: Value = serde_json::to_value(toml_value)?;
-
-				// FIXME
-				json_value
+				values.push(json_value);
 			}
 			Some(other) => return Err(format!("Lang '{other}' not supported for meta block").into()),
 			None => return Err("Meta block must have a compatible lang".into()),
 		}
-	} else {
-		Value::Null
-	};
+	}
 
-	Ok(value)
+	// -- Merge the values into one
+	// NOTE: Will assum ethat the values a object
+	//       Does NOT do deep merge for now.
+	let mut merged = serde_json::Map::new();
+	for value in values {
+		if let Value::Object(obj) = value {
+			for (k, v) in obj {
+				merged.insert(k, v);
+			}
+		}
+	}
+	let merged_value = Value::Object(merged);
+
+	Ok(merged_value)
 }
 
 // endregion: --- Block Value Parser
@@ -177,6 +189,7 @@ mod tests {
 	type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>; // For tests.
 
 	use super::*;
+	use value_ext::JsonValueExt;
 
 	// region:    --- fx_md
 	const FX_MD_SIMPLE: &str = r#"
@@ -193,6 +206,10 @@ This is is pretty cool
 ```toml
 #!meta
 temperature = 0.0
+```
+
+```toml
+#!meta
 ```
 
 And some more2
@@ -216,8 +233,20 @@ def some()
 		// -- Exec
 		let (value_root, content) = meta_extract(FX_MD_SIMPLE)?;
 
-		// -- Debug
-		println!("->> {value_root:?}");
+		// -- Check
+		assert_eq!(value_root.x_get_f64("temperature")?, 0.0);
+		assert_eq!(value_root.x_get_str("model")?, "deepseek-chat");
+		let array = value_root.get("files").and_then(|v| v.as_array()).ok_or("Should have files")?;
+		let strs = array.iter().map(|v| v.as_str().unwrap_or_default()).collect::<Vec<_>>();
+		assert_eq!(&strs, &["src/**/*rs"]);
+
+		// Content
+		assert!(
+			content.contains("Hey some content over here."),
+			"Hey some content over here."
+		);
+		assert!(content.contains(r#"```toml"#), "```toml");
+		assert!(content.contains(r#"some = "stuff""#), "some = stuff");
 
 		Ok(())
 	}
@@ -227,15 +256,9 @@ def some()
 		// -- Exec
 		let (meta_blocks, content) = extract_md_blocks_and_content(FX_MD_SIMPLE)?;
 
-		// -- Debug
-		// println!("\n====\n");
-
-		// println!("->> meta md_blocks {}", md_blocks.len());
-		// println!("->> content:\n{content}");
-
 		// -- Check
 		// assert meta blocks
-		assert_eq!(meta_blocks.len(), 2);
+		assert_eq!(meta_blocks.len(), 3);
 		let meta_block = meta_blocks.first().ok_or("Should have at least one meta block")?;
 		let lang = meta_block.lang.as_deref().ok_or("Meta block should have lang")?;
 		assert_eq!(lang, "toml");
