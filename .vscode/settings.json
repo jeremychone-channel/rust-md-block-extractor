@@ -1,0 +1,106 @@
+{
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "explicit"
+	},
+	// "editor.glyphMargin": false,
+	"editor.suggest.showIcons": false,
+	"editor.lightbulb.enabled": "off",
+	// "editor.hover.enabled": false,
+	// "typescript.suggestionActions.enabled": false,
+	// "rust-analyzer.hoverActions.enable": false,
+	"files.exclude": {
+		// "rustfmt.toml": true
+		".notes/": true, // set to true when demo
+	},
+	"editor.quickSuggestions": {
+		"other": false,
+		"comments": false,
+		"strings": false
+	},
+	// Specific for genai for client icon overwrite
+	// three ../ for default icons, 4 for the custom jc icons
+	"material-icon-theme.folders.associations": {
+		"client": "../../../icons/folder-api", 
+		"adapter": "../../../icons/folder-connection", 
+		"webc": "../../../icons/folder-global", 
+	},
+	"workbench.colorCustomizations": {
+
+		"editor.background": "#000", // befoe: #1a1a1a default: #1F1F1F
+		"sideBar.background": "#0f0f0f",
+		// "panel.background": "#000",
+		// "terminal.background": "#000",
+		"terminal.background" : "#000",
+
+		// "editor.lineHighlightBackground": "#55555510",
+		"editor.selectionBackground": "#004973af",// "#33669999", // "#ffDDFF00"
+		"editor.inactiveSelectionBackground": "#33669999",  // "#00DDFF21"
+		// "editorWarning.foreground": "#0000",
+		// "editorError.foreground": "#ff0000",
+		// "editorInfo.foreground": "#00f"
+		// "editor.selectionHighlightBackground": "#00497315",
+		// "editor.wordHighlightBackground": "#3d3d3d",
+		// "editorCursor.foreground": "#868686",
+		"editorLineNumber.activeForeground": "#444",
+		"editorLineNumber.foreground": "#444",
+		// To hide the error lines
+		// "editorError.foreground":   "#00000000",
+		// "editorWarning.foreground": "#00000000",
+		// "editorInfo.foreground":    "#00000000"
+	},
+
+	// -- Size & Zoom
+	"window.zoomLevel": 2, // 3 for rec, 4 for intro, 5 for thumb 
+	"editor.fontSize": 16, // 20 (zoom 2), 18 (zoom 3), 16 (zoom 3 with split vertical) 26 for simple
+	"editor.inlayHints.fontSize": 12, // 16, 14 when zoom 3 and split screen
+	"terminal.integrated.fontSize": 14, // 16 when zoom 3 and split screen
+
+	// -- Git
+	"editor.selectionHighlight": true,
+	"git.decorations.enabled": true,
+	"git.enabled": true,
+
+	// -- Breadcrumbs
+	"breadcrumbs.filePath": "on",
+	"breadcrumbs.enabled": true,
+	"breadcrumbs.symbolPath": "off",
+
+	// -- Sidebar
+	"workbench.editor.showTabs": "multiple", 
+	"workbench.statusBar.visible": false,
+
+	// "editor.quickSuggestionsDelay": 1000, // not needed, see editor.quickSuggestions: ...false
+	"editor.lineNumbers": "on",
+	"editor.guides.indentation": false,
+	"editor.guides.highlightActiveIndentation": false,
+	"editor.renderWhitespace": "none",
+	// for rust
+	"editor.padding.top": 8,
+	"workbench.iconTheme": "material-icon-theme",
+	//// TURN OFF WHEN REAL DEV
+	"editor.occurrencesHighlight": "off",
+	"editor.suggestOnTriggerCharacters": false,
+	"editor.suggest.showTypeParameters": false,
+	"editor.quickSuggestionsDelay": 1000,
+	"editor.renderLineHighlight": "none",
+	"editor.glyphMargin": false,
+	//// VSCode header / footer
+	"rust-analyzer.showUnlinkedFileNotification": false,
+	"rust-analyzer.hover.documentation.keywords.enable": false,
+	"rust-analyzer.hover.documentation.enable": false,
+	"editor.hover.delay": 9000,
+	"editor.hover.enabled": false,
+	"workbench.activityBar.location": "hidden",
+
+	"github.copilot.editor.enableAutoCompletions": false,
+	"github.copilot.enable": { 
+		"*": true, // enable for now. 
+		"plaintext": false,
+		"markdown": false,
+		"scminput": false
+	},
+	"workbench.editor.highlightModifiedTabs": false,
+	"editor.stickyScroll.enabled": false,
+	/// for thumb
+	// "editor.fontWeight": "bold",
+}
