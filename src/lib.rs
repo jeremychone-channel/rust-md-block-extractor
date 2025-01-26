@@ -54,6 +54,11 @@ def some()
 		// -- Exec
 		let (md_blocks, content) = md::meta_extract(fx_md)?;
 
+		println!("\n====\n");
+
+		println!("->> meta md_blocks {}", md_blocks.len());
+		println!("->> content:\n{content}");
+
 		// -- Check
 
 		Ok(())

@@ -49,8 +49,8 @@ pub fn meta_extract(content: &str) -> Result<(Vec<MdBlock>, String)> {
 			if in_block {
 				if in_candidate_meta_block {
 					if first_block_line {
-						first_block_line = false;
 						if line.trim() == "#!meta" {
+							first_block_line = false;
 							action = Action::CaptureInMetaBlock
 						} else {
 							action = Action::CaptureInContent;
@@ -94,6 +94,13 @@ pub fn meta_extract(content: &str) -> Result<(Vec<MdBlock>, String)> {
 				}
 			}
 			Action::CaptureInContent => {
+				if first_block_line {
+					if let Some(prev_line) = previous_line {
+						content.push(prev_line);
+						// TODO: Should not change state, e.g., implent a new Action::CaptureInContentAndPrevLine
+						first_block_line = false;
+					}
+				}
 				// FIXME: need to capture previous_line when in block that is not meta
 				content.push(line)
 			}
