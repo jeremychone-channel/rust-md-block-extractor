@@ -51,9 +51,9 @@
 
 	// -- Size & Zoom
 	"window.zoomLevel": 2, // 3 for rec, 4 for intro, 5 for thumb 
-	"editor.fontSize": 18, // 20 (zoom 2), 18 (zoom 3), 16 (zoom 3 with split vertical) 26 for simple
-	"editor.inlayHints.fontSize": 14, // 16, 14 when zoom 3 and split screen
-	"terminal.integrated.fontSize": 16, // 16 when zoom 3 and split screen
+	"editor.fontSize": 16, // 20 (zoom 2), 18 (zoom 3), 16 (zoom 3 with split vertical) 26 for simple
+	"editor.inlayHints.fontSize": 12, // 16, 14 when zoom 3 and split screen
+	"terminal.integrated.fontSize": 14, // 16 when zoom 3 and split screen
 
 	// -- Git
 	"editor.selectionHighlight": true,

@@ -229,7 +229,7 @@ def some()
 	// endregion: --- fx_md
 
 	#[test]
-	fn test_meta_extract() -> Result<()> {
+	fn test_meta_extract_simple() -> Result<()> {
 		// -- Exec
 		let (value_root, content) = meta_extract(FX_MD_SIMPLE)?;
 
